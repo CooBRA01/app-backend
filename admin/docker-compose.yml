@@ -1,0 +1,50 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/usr/src/app  
+    environment:
+      - DEBUG=0  
+      - DATABASE_URL=mysql://django_user:password123@db:3306/admin
+    depends_on:
+      db:
+        condition: service_healthy  
+    restart: unless-stopped  
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python -u consumer.py'
+    environment:
+      - DJANGO_SETTINGS_MODULE=admin.settings
+    depends_on:
+      db:
+        condition: service_healthy  
+    restart: unless-stopped  
+
+
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - dbdata:/var/lib/mysql  
+    ports:
+      - 3306:3306
+    healthcheck: 
+      test: ["CMD", "mysqladmin", "ping", "-h", "db", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  dbdata:
