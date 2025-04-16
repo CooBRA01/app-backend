@@ -14,6 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Debug directory structure
+        run: ls -R
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -24,13 +27,13 @@ jobs:
         run: |
           docker build -t evaander/your-app-django:latest -f backend/admin/Dockerfile backend/admin
           docker push evaander/your-app-django:latest
-        working-directory: .  # Ensure build context is repo root
+        working-directory: .
 
       - name: Build and push Flask
         run: |
           docker build -t evaander/your-app-flask:latest -f backend/main/Dockerfile backend/main
           docker push evaander/your-app-flask:latest
-        working-directory: .  # Ensure build context is repo root
+        working-directory: .
 
       - name: Update GitOps
         env:
