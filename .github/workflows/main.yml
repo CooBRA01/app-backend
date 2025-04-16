@@ -2,7 +2,7 @@ name: Backend CI
 on:
   push:
     branches: [main]
-    paths: ["backend/**"]
+    paths: ["app-backend/**"]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,11 +15,11 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build and push Django
         run: |
-          docker build -t evaander/your-app-django:latest -f backend/django/Dockerfile backend/django
+          docker build -t evaander/your-app-django:latest -f app-backend/admin/Dockerfile app-backend/admin
           docker push evaander/your-app-django:latest
       - name: Build and push Flask
         run: |
-          docker build -t evaander/your-app-flask:latest -f backend/flask/Dockerfile backend/flask
+          docker build -t evaander/your-app-flask:latest -f app-backend/main/Dockerfile app-backend/main
           docker push evaander/your-app-flask:latest
       - name: Update GitOps
         env:
