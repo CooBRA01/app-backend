@@ -44,4 +44,4 @@ services:
       retries: 10
 
 volumes:
-  dbdata:
+  dbdata:  
