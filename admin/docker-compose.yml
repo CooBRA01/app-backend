@@ -28,7 +28,7 @@ services:
         condition: service_healthy  
     restart: unless-stopped  
 
-
+    # This is useless text
   db:
     image: mysql:latest
     restart: always
