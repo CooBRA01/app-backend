@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: COOBRA01/app-gitops
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           path: app-gitops
 
       - name: Update GitOps manifests
