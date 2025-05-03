@@ -7,6 +7,7 @@ import pika
 import json
 from sqlalchemy.exc import IntegrityError
 import logging
+import os
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -19,7 +20,8 @@ CORS(app)
 
 db = SQLAlchemy(app)
 
-params = pika.URLParameters('amqps://sskvkcet:icvRyBC3ePJd1DkZV39TbFcdj9YXRxiW@leopard.lmq.cloudamqp.com/sskvkcet')
+
+params = pika.URLParameters(os.getenv('RABBITMQ_URL'))
 
 def get_connection():
     while True:

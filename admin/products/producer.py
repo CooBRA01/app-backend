@@ -2,11 +2,13 @@ import pika
 import json
 import time
 import logging
+import os
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-params = pika.URLParameters('amqps://sskvkcet:icvRyBC3ePJd1DkZV39TbFcdj9YXRxiW@leopard.lmq.cloudamqp.com/sskvkcet')
+
+params = pika.URLParameters(os.getenv('RABBITMQ_URL'))
 
 def get_connection():
     while True:

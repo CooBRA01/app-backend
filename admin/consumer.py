@@ -14,7 +14,8 @@ django.setup()
 
 from products.models import Product
 
-params = pika.URLParameters('amqps://sskvkcet:icvRyBC3ePJd1DkZV39TbFcdj9YXRxiW@leopard.lmq.cloudamqp.com/sskvkcet')
+
+params = pika.URLParameters(os.getenv('RABBITMQ_URL'))
 
 def get_connection():
     while True:
