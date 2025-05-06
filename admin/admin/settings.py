@@ -29,12 +29,7 @@ SECRET_KEY = 'django-insecure-fb=s*86rmglgx$m+*oib1ft2#28$rqguy05810niw%0#ya@%*_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'localhost',  # Default for local development
-    '127.0.0.1',  # Default for local development
-    'host.docker.internal',
-    'docker.for.mac.localhost',  # Allow requests from Docker containers
-]
+ALLOWED_HOSTS = ['*']  # Allow all hosts for development
 
 # Application definition
 
