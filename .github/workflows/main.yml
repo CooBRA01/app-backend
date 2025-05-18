@@ -18,6 +18,14 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Set environment variables
+        run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl yamllint
+
       - name: Debug - show directory structure
         run: ls -R
 
@@ -30,15 +38,32 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Django image
-        run: |
-          docker build -t evaander/your-app-django:latest -f admin/Dockerfile admin
-          docker push evaander/your-app-django:latest
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Flask image
+      - name: Build and push Django image 
         run: |
-          docker build -t evaander/your-app-flask:latest -f main/Dockerfile main
-          docker push evaander/your-app-flask:latest
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            -t evaander/your-app-django:${{ env.IMAGE_TAG }} \
+            -f admin/Dockerfile admin
+
+      - name: Build and push Flask image 
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            -t evaander/your-app-flask:${{ env.IMAGE_TAG }} \
+            -f main/Dockerfile main
+
+      - name: Verify Django image pushed
+        run: |
+          curl -s https://hub.docker.com/v2/repositories/evaander/your-app-django/tags/${{ env.IMAGE_TAG }}/ | grep '"name"' || exit 1
+
+      - name: Verify Flask image pushed
+        run: |
+          curl -s https://hub.docker.com/v2/repositories/evaander/your-app-flask/tags/${{ env.IMAGE_TAG }}/ | grep '"name"' || exit 1
 
       - name: Checkout GitOps repo
         uses: actions/checkout@v4
@@ -47,13 +72,24 @@ jobs:
           token: ${{ secrets.TOKEN }}
           path: app-gitops
 
+      - name: Validate YAML syntax
+        run: |
+          cd app-gitops
+          yamllint manifests/
+
       - name: Update GitOps manifests
         run: |
           cd app-gitops
-          sed -i "s|evaander/your-app-django:.*|evaander/your-app-django:latest|" manifests/django-deployment.yml
-          sed -i "s|evaander/your-app-flask:.*|evaander/your-app-flask:latest|" manifests/flask-deployment.yml
+          
+          sed -i "s|image: evaander/your-app-django:.*|image: evaander/your-app-django:${{ env.IMAGE_TAG }}|" manifests/django-deployment.yml
+          sed -i "s|image: evaander/your-app-flask:.*|image: evaander/your-app-flask:${{ env.IMAGE_TAG }}|" manifests/flask-deployment.yml
+          
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
+
           git add .
-          git commit -m "Update backend images to latest" || echo "No changes to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update backend images to ${{ env.IMAGE_TAG }}"
+            git push
